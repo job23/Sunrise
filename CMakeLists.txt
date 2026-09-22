@@ -111,7 +111,7 @@ if(MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     )
 endif()
 
-if(CMAKE_HOST_LINUX AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(NOT CMAKE_HOST_WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(steam_api64 PRIVATE
         $<$<CONFIG:Debug>:/clang:-gdwarf>
         $<$<CONFIG:Debug>:/clang:-g>

@@ -65,7 +65,7 @@ msbuild Sunrise.sln /m /p:Configuration=Release /p:Platform=x64
 
 ### Linux
 
-Make sure you have `git`, `cmake`, `clang`, `ninja`, `llvm`, and `xwin` installed.
+Make sure you have `git`, `cmake`, `clang`, `ninja`, `llvm`, `lld`, and `xwin` installed.
 
 1. Clone the repository
 ```bash
@@ -80,9 +80,40 @@ $ xwin --sdk-version 10.0.26100 --accept-license splat --include-debug-libs --ou
 
 3. Configure and build the project
 ```bash
-$ cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(pwd)/linux-to-win-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+$ cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(pwd)/unix-to-win-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build
 ```
+
+### macOS
+
+The DLL cross-compiles on Apple Silicon and Intel Macs with the same clang-cl toolchain the
+Linux build uses. Make sure you have the Xcode command line tools and Homebrew, then:
+
+1. Install the toolchain
+```bash
+$ brew install cmake ninja llvm lld xwin
+```
+
+2. Clone the repository
+```bash
+$ git clone https://github.com/stanuwu/Sunrise
+$ cd Sunrise
+```
+
+3. Download Windows headers (about 1.7 GB, once):
+```bash
+$ xwin --sdk-version 10.0.26100 --accept-license splat --include-debug-libs --output .xwin-cache
+```
+
+4. Configure and build the project
+```bash
+$ cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=$(pwd)/unix-to-win-toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+$ cmake --build build
+```
+
+The DLL lands in `build/x64/Release/steam_api64.dll`. Homebrew keeps `llvm` and `lld` off
+`PATH`; the toolchain file finds them under `/opt/homebrew/opt` (or `/usr/local/opt` on Intel)
+without any shell setup. Pass `-DLLVM_ROOT=...` or `-DLLD_ROOT=...` to point at another LLVM.
 
 ## Contributing
 

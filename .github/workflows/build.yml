@@ -39,3 +39,45 @@ jobs:
             build/x64/Release/steam_api64.dll
             build/x64/Release/steam_api64.pdb
           if-no-files-found: error
+
+  macos-cross:
+    name: macOS cross-build x64
+    # Builds the same DLL with clang-cl + lld-link from an Apple Silicon host, so the macOS
+    # and Linux toolchain path stays green alongside the MSVC release.
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: brew install ninja llvm lld xwin
+
+      - name: Cache Windows SDK splat
+        id: xwin-cache
+        uses: actions/cache@v4
+        with:
+          path: .xwin-cache
+          key: xwin-10.0.26100-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Splat Windows SDK
+        if: steps.xwin-cache.outputs.cache-hit != 'true'
+        run: >
+          xwin --sdk-version 10.0.26100 --accept-license splat
+          --include-debug-libs --output .xwin-cache
+
+      - name: Configure
+        run: >
+          cmake -B build -G Ninja
+          -DCMAKE_TOOLCHAIN_FILE=$PWD/unix-to-win-toolchain.cmake
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sunrise-Release-x64-macos-cross
+          path: build/x64/Release/steam_api64.dll
+          if-no-files-found: error
