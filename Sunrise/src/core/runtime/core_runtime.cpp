@@ -12,6 +12,7 @@
 
 #include "../../client/runtime/host/game_host_classification.h"
 #include "../../client/runtime/runtime.h"
+#include "../../middleware/crypto/provider_probe.h"
 #include "../../middleware/runtime/middleware_runtime.h"
 #include "../../server/runtime/server_runtime.h"
 #include "../../state/activity_sdk/generated_world/catalog_manifest.h"
@@ -29,6 +30,7 @@
 #include "../ui/modules/registry/ui_module_registry.h"
 #include "../ui/runtime/ui_visibility_runtime.h"
 #include "core/threading/srw_lock.h"
+#include "host_environment.h"
 
 namespace sunrise::core {
 namespace {
@@ -161,6 +163,10 @@ bool initialize(void* module) noexcept {
         // The sinks exist only from here, so this is the earliest a begin marker can reach a
         // channel. The duration it pairs with still counts from function entry.
         log::write(log::Channel::core, log::Level::debug, "ev=initialize phase=begin");
+        // Named first so every later line in a bug report already says which host produced it.
+        runtime::log_host();
+        // A Wine build may lack a CNG primitive. Naming it here beats an opaque sign-on failure.
+        middleware::crypto::provider_probe::log_report(middleware::crypto::provider_probe::probe());
         if (!ui::runtime::initialize(settings::get().client.userInterface)) {
             stage = "ui";
         } else if (!ui::modules::hud::initialize(module)) {

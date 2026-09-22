@@ -130,6 +130,7 @@
     <ClCompile Include="src\core\settings\state\activity_default_destination_parser.cpp" />
     <ClCompile Include="src\core\runtime\core_runtime.cpp" />
     <ClCompile Include="src\core\runtime\host_environment.cpp" />
+    <ClCompile Include="src\middleware\crypto\provider_probe.cpp" />
     <ClCompile Include="src\core\ui\modules\ui_module_descriptor.cpp" />
     <ClCompile Include="src\core\ui\modules\registry\ui_module_registry.cpp" />
     <ClCompile Include="src\core\ui\modules\logs\logs_module_runtime.cpp" />
@@ -1271,6 +1272,7 @@
     <ClInclude Include="src\core\settings\steam\definition.h" />
     <ClInclude Include="src\core\runtime\core_runtime.h" />
     <ClInclude Include="src\core\runtime\host_environment.h" />
+    <ClInclude Include="src\middleware\crypto\provider_probe.h" />
     <ClInclude Include="src\core\ui\imgui_user_config.h" />
     <ClInclude Include="src\core\ui\modules\ui_module_descriptor.h" />
     <ClInclude Include="src\core\ui\modules\registry\ui_module_registry.h" />
