@@ -9,6 +9,8 @@
 #include <d3d11_1.h>
 #include <d3dcompiler.h>
 
+#include "../../../../core/logging/log.h"
+
 namespace sunrise::client::hooks::graphics::renderer::world_lines {
 namespace {
 
@@ -524,18 +526,23 @@ void append_sphere(Writer& writer, const Sphere& sphere) noexcept {
         release_com(errors);
     }
     if (SUCCEEDED(result)) {
-        result = D3DCompile(kGeometryShader,
-                            std::strlen(kGeometryShader),
-                            nullptr,
-                            nullptr,
-                            nullptr,
-                            "main",
-                            "gs_4_0",
-                            D3DCOMPILE_ENABLE_STRICTNESS,
-                            0,
-                            &geometryBlob,
-                            &errors);
+        // Kept apart from `result`: a compiler that rejects the geometry stage is handled the same
+        // way as a device that cannot create it, below.
+        const HRESULT geometryCompile = D3DCompile(kGeometryShader,
+                                                   std::strlen(kGeometryShader),
+                                                   nullptr,
+                                                   nullptr,
+                                                   nullptr,
+                                                   "main",
+                                                   "gs_4_0",
+                                                   D3DCOMPILE_ENABLE_STRICTNESS,
+                                                   0,
+                                                   &geometryBlob,
+                                                   &errors);
         release_com(errors);
+        if (FAILED(geometryCompile)) {
+            release_com(geometryBlob);
+        }
     }
     if (SUCCEEDED(result)) {
         result = device->CreateVertexShader(vertexBlob->GetBufferPointer(),
@@ -544,10 +551,22 @@ void append_sphere(Writer& writer, const Sphere& sphere) noexcept {
                                             &g_resources.vertexShader);
     }
     if (SUCCEEDED(result)) {
-        result = device->CreateGeometryShader(geometryBlob->GetBufferPointer(),
-                                              geometryBlob->GetBufferSize(),
-                                              nullptr,
-                                              &g_resources.geometryShader);
+        // The geometry stage only widens lines. A translation layer without geometry shaders
+        // (MoltenVK under DXVK on macOS) still draws them one pixel wide through the vertex
+        // stage alone, so its failure degrades the pass instead of disabling it.
+        const HRESULT geometryResult =
+            geometryBlob == nullptr ? E_FAIL
+                                    : device->CreateGeometryShader(geometryBlob->GetBufferPointer(),
+                                                                   geometryBlob->GetBufferSize(),
+                                                                   nullptr,
+                                                                   &g_resources.geometryShader);
+        if (FAILED(geometryResult)) {
+            release_com(g_resources.geometryShader);
+            core::log::writef(core::log::Channel::client,
+                              core::log::Level::warn,
+                              "ev=world_lines stage=geometry_shader result=fallback hr=0x%08lX",
+                              static_cast<unsigned long>(geometryResult));
+        }
     }
     if (SUCCEEDED(result)) {
         result = device->CreatePixelShader(pixelBlob->GetBufferPointer(),
