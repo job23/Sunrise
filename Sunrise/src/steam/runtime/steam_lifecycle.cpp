@@ -6,6 +6,7 @@
 #include "../../client/hooks/bootflow/bootflow_texture_override.h"
 #include "../../client/hooks/egress/runtime.h"
 #include "../../client/hooks/package_trust/package_trust_bypass.h"
+#include "../../client/hooks/wintrust_guard/wintrust_guard.h"
 #include "../../client/runtime/runtime.h"
 #include "../../core/logging/log.h"
 #include "../../core/runtime/core_runtime.h"
@@ -58,6 +59,10 @@ bool initialize(void* module) noexcept {
     if (core::runtime::is_wine()) {
         client::graphics::initialize_wine_display();
     }
+    // The Client verifies signatures on a worker it starts at process start, so the Wine guard
+    // attaches at the first Steam export, ahead of everything that could wait. A miss only
+    // leaves the host's own wintrust in place.
+    (void)client::hooks::wintrust_guard::install();
     if (!client::hooks::egress::install()) {
         return false;
     }
@@ -78,6 +83,8 @@ bool initialize(void* module) noexcept {
             (void)core::shutdown();
             return false;
         }
+        // Attached above, before Core logging existed, so its outcome is reported here.
+        client::hooks::wintrust_guard::report_installation();
         // Bootflow GPU entries can load before the first Steam callback pump. The decoded-entry
         // override must therefore attach here while the stock `_unp1` package remains registered
         // through its native path.
@@ -103,6 +110,11 @@ bool shutdown() noexcept {
             g_initialized.load(std::memory_order_acquire) || core::is_initialized();
         if (!hadRuntime) {
             return true;
+        }
+        if (!client::hooks::wintrust_guard::uninstall()) {
+            core::log::write(core::log::Channel::client,
+                             core::log::Level::warn,
+                             "ev=steam_shutdown stage=wintrust_guard result=fail");
         }
         if (!core::shutdown()) {
             core::log::write(core::log::Channel::client,

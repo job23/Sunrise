@@ -4,6 +4,7 @@
 
 #include "client/hooks/egress/runtime.h"
 #include "client/hooks/network/investment/internal.h"
+#include "client/hooks/wintrust_guard/wintrust_guard.h"
 #include "core/runtime/core_runtime.h"
 #include "steam/runtime/internal.h"
 #include "steam/runtime/runtime.h"
@@ -55,6 +56,8 @@ extern "C" __declspec(dllexport) void SteamAPI_RunCallbacks() noexcept {
  * @return False because the in-process shim never asks for a restart.
  */
 extern "C" __declspec(dllexport) bool SteamAPI_RestartAppIfNecessary(DWORD appId) noexcept {
+    // Usually the Client's first call into this DLL, so the Wine guard attaches here too.
+    (void)sunrise::client::hooks::wintrust_guard::install();
     sunrise::steam::set_app_id(appId);
     return false;
 }

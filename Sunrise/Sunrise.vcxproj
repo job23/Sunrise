@@ -257,6 +257,7 @@
     <ClCompile Include="src\client\executable\image.cpp" />
     <ClCompile Include="src\client\memory\current_process_memory.cpp" />
     <ClCompile Include="src\client\hooks\package_trust\package_trust_bypass.cpp" />
+    <ClCompile Include="src\client\hooks\wintrust_guard\wintrust_guard.cpp" />
     <ClCompile Include="src\client\hooks\feature_flags\feature_flags.cpp" />
     <ClCompile Include="src\client\hooks\cine_probe\cine_probe.cpp" />
     <ClCompile Include="src\client\hooks\net_tick_probe\net_tick_probe.cpp" />
@@ -1833,6 +1834,7 @@
     <ClInclude Include="src\client\hooks\egress\policy\egress_policy_logging.h" />
     <ClInclude Include="src\client\hooks\network\investment\internal.h" />
     <ClInclude Include="src\client\hooks\package_trust\package_trust_bypass.h" />
+    <ClInclude Include="src\client\hooks\wintrust_guard\wintrust_guard.h" />
     <ClInclude Include="src\client\patterns\game\assert_handler\assert_signature_bytes.h" />
     <ClInclude Include="src\client\patterns\game\config_getter\config_getter_signature_bytes.h" />
     <ClInclude Include="src\client\patterns\game\packages\package_key_signature_bytes.h" />
