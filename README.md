@@ -11,6 +11,7 @@ Destiny 2 Offline Preservation Mod
 - [FAQ](https://projectsunrise.dev/faq/)
 - [Documentation](https://projectsunrise.dev/docs/)
 - [Discord](https://discord.gg/22JS6et5k9)
+- [Installing on macOS](scripts/macos/README.md)
 
 ## Features
 - Load into any Destination (matchmade activities are currently broken)
